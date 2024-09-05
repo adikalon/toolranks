@@ -1,5 +1,6 @@
 local mod_storage = minetest.get_mod_storage()
 local S = minetest.get_translator("toolranks")
+local mod_tt_base = minetest.get_modpath("tt_base")
 
 toolranks = {}
 
@@ -44,18 +45,42 @@ function toolranks.get_level(uses)
   return 0
 end
 
-function toolranks.create_description(name, uses)
-  local description = name
-  local tooltype = toolranks.get_tool_type(description)
+function toolranks.removeSubstring(str, word)
+  if type(str) ~= "string" then
+    return ""
+  end
+
+  local pos = string.find(str, word)
+
+  if pos then
+    return string.sub(str, pos)
+  end
+
+  return str
+end
+
+function toolranks.create_description(name, desc, uses)
+  local sym = ""
+  local pattern = "@1@2\n@3Level @4 @5\n@6@Node dug: @7@8"
+  local description = ""
+
+  if mod_tt_base then
+    sym = "   "
+    pattern = "@1@2\n@3Level @4 @5\n@6@Node dug: @7" .. sym .. "@8"
+    description = minetest.colorize("#d0ffd0", toolranks.removeSubstring(desc, sym))
+  end
+
+  local tooltype = toolranks.get_tool_type(name)
   local newdesc = S(
-    "@1@2\n@3Level @4 @5\n@6@Node dug: @7",
+    pattern,
     toolranks.colors.green,
-    description,
+    name,
     toolranks.colors.gold,
     toolranks.get_level(uses),
     S(tooltype),
     toolranks.colors.grey,
-    (type(uses) == "number" and uses or 0)
+    (type(uses) == "number" and uses or 0),
+    description
   )
   return newdesc
 end
@@ -64,6 +89,7 @@ function toolranks.new_afteruse(itemstack, user, node, digparams)
   local itemmeta = itemstack:get_meta()
   local itemdef = itemstack:get_definition()
   local itemdesc = itemdef.original_description or ""
+  local itemfulldesc = itemdef.description or ""
   local dugnodes = tonumber(itemmeta:get_string("dug")) or 0
   local lastlevel = tonumber(itemmeta:get_string("lastlevel")) or 0
   local most_digs = mod_storage:get_int("most_digs") or 0
@@ -139,7 +165,7 @@ function toolranks.new_afteruse(itemstack, user, node, digparams)
   end
 
   itemmeta:set_string("lastlevel", level)
-  itemmeta:set_string("description", toolranks.create_description(itemdesc, dugnodes))
+  itemmeta:set_string("description", toolranks.create_description(itemdesc, itemfulldesc, dugnodes))
   itemstack:add_wear(wear)
   return itemstack
 end
@@ -153,6 +179,15 @@ function toolranks.add_tool(name)
     after_use = toolranks.new_afteruse
   })
 end
+
+-- for itemstring, def in pairs(minetest.registered_items) do
+--   local def = minetest.registered_items[itemstring]
+--   if def.tool_capabilities then
+--     if def.tool_capabilities.groupcaps or def.tool_capabilities.damage_groups then
+--       toolranks.add_tool(itemstring)
+--     end
+--   end
+-- end
 
 -- Sword
 toolranks.add_tool("default:sword_wood")
