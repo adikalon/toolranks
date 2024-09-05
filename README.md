@@ -1,31 +1,9 @@
-# minetest-toolranks [toolranks]
+# Tool Ranks [`toolranks`]
 
-Minetest tool ranks mod
+This is a fork of the unsupported [toolranks mod](https://github.com/lisacvuk/minetest-toolranks)
 
-Tools gain levels for digging nodes. Higher level tools dig faster and take longer to wear out.
+![Preview](./screenshot.png)
 
-## Licence
-Code: LGPLv2.1+  
-Tool level sound: [CC BY 3.0](https://freesound.org/people/MakoFox/sounds/126422/)
+## Changes
 
-## Are you a mod developer?
-
-Does one of your mods add new tools?
-If so, to support this mod, add this code to your mod, after your tool's code:
-
-```lua
-if minetest.get_modpath("toolranks") then
-    minetest.override_item("mymod:mytool", {
-        original_description = "My Tool",
-        description = toolranks.create_description("My Tool"),
-        after_use = toolranks.new_afteruse
-    })
-    end
-end
-```
-
-Or alternatively, you can use the helper function:
-
-```lua
-toolranks.add_tool("mymod:mytool")
-```
+Now does not overwrite descriptions from tt_base mod
