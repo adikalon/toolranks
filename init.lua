@@ -17,27 +17,6 @@ local max_level = tonumber(minetest.settings:get("toolranks_levels")) or 10
 local level_digs = tonumber(minetest.settings:get("toolranks_level_digs")) or 500
 local level_multiplier = 1 / max_level
 
-function toolranks.get_tool_type(description)
-  if not description then
-    return "tool"
-  else
-    local d = string.lower(description)
-    if string.find(d, "pickaxe") then
-      return "pickaxe"
-    elseif string.find(d, "axe") then
-      return "axe"
-    elseif string.find(d, "shovel") then
-      return "shovel"
-    elseif string.find(d, "hoe") then
-      return "hoe"
-    elseif string.find(d, "sword") then
-      return "sword"
-    else
-      return "tool"
-    end
-  end
-end
-
 function toolranks.get_level(uses)
   if type(uses) == "number" and uses > 0 then
     return math.min(max_level, math.floor(uses / level_digs))
@@ -61,23 +40,21 @@ end
 
 function toolranks.create_description(name, desc, uses)
   local sym = ""
-  local pattern = "@1@2\n@3Level @4 @5\n@6@Node dug: @7@8"
+  local pattern = "@1@2\n@3Level: @4 @5\nNode dug: @6@7"
   local description = ""
 
   if mod_tt_base then
     sym = "   "
-    pattern = "@1@2\n@3Level @4 @5\n@6@Node dug: @7" .. sym .. "@8"
+    pattern = "@1@2\n@3Level: @4 @5\nNode dug: @6" .. sym .. "@7"
     description = minetest.colorize("#d0ffd0", toolranks.removeSubstring(desc, sym))
   end
 
-  local tooltype = toolranks.get_tool_type(name)
   local newdesc = S(
     pattern,
     toolranks.colors.green,
     name,
     toolranks.colors.gold,
     toolranks.get_level(uses),
-    S(tooltype),
     toolranks.colors.grey,
     (type(uses) == "number" and uses or 0),
     description
@@ -128,7 +105,7 @@ function toolranks.new_afteruse(itemstack, user, node, digparams)
   local level = toolranks.get_level(dugnodes)
   if lastlevel < level then
     local levelup_text = S(
-      "Your @1@2@3 just leveled up!",
+      "Your @1@2@3 just leveled up to @4@5@6!",
       toolranks.colors.green,
       itemdesc,
       toolranks.colors.white
@@ -148,13 +125,15 @@ function toolranks.new_afteruse(itemstack, user, node, digparams)
       caps.punch_attack_uses = caps.punch_attack_uses and (caps.punch_attack_uses * use_multiplier)
 
       for _,c in pairs(caps.groupcaps) do
-        c.uses = c.uses * use_multiplier
-        for i,t in ipairs(c.times) do
-          c.times[i] = t / speed_multiplier
+        if c.uses then
+          c.uses = c.uses * use_multiplier
+          for i,t in ipairs(c.times) do
+            c.times[i] = t / speed_multiplier
+          end
         end
       end
       itemmeta:set_tool_capabilities(caps)
-	end
+    end
   end
 
   -- Old method for compatibility with tools without tool_capabilities defined
