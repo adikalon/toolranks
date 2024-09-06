@@ -6,4 +6,4 @@ This is a fork of the unsupported [toolranks mod](https://github.com/lisacvuk/mi
 
 ## Changes
 
-Now does not overwrite descriptions from tt_base mod
+Now does not overwrite descriptions from tt and tt_base mods
