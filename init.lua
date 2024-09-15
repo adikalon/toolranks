@@ -108,6 +108,9 @@ function toolranks.new_afteruse(itemstack, user, node, digparams)
       "Your @1@2@3 just leveled up to @4@5@6!",
       toolranks.colors.green,
       itemdesc,
+      toolranks.colors.white,
+      toolranks.colors.green,
+      level,
       toolranks.colors.white
     )
     minetest.chat_send_player(user:get_player_name(), levelup_text)
